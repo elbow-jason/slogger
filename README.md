@@ -91,6 +91,24 @@ With a custom handler:
 
 Configure using the config.exs file:
 
+(in the app's `config.exs`)
 ```elixir
+  use Mix.Config
+
+  config :slogger, MySloggingModule,
+    level: :error
+```
+
+```elixir
+
+defmodule MySloggingModule do
+  use Slogger
+
+  def do_it do
+    Slogger.debug("this won't log")
+    Slogger.error("this will log")
+  end
+
+end
 
 ```
