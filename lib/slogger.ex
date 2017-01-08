@@ -36,10 +36,10 @@ defmodule Slogger do
 
   defmacro __using__(opts) do
     quote do
-
       defmodule unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat) do
+        caller_module = unquote(__CALLER__.module)
         @levels [:debug, :info, :warn, :error]
-        config = Application.get_env(:slogger, unquote(__CALLER__.module))
+        config = Application.get_env(:slogger, caller_module)
 
         @level config[:level] || unquote(opts[:level])  || :debug
         if not @level in @levels do
@@ -63,11 +63,10 @@ defmodule Slogger do
           @handler.log(entry, level)
         end
 
+        @logger unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat)
+        def logger, do: @logger
+
       end
-
-      @logger unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat)
-
-      def logger, do: @logger
 
       alias unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat), as: Slogger
       # For some reason logger_as is not being shadowed into scope in the alias unqoutes. -JLG
