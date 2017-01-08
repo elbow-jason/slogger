@@ -55,6 +55,7 @@ defmodule Slogger do
         def log(entry, level) when level in @levels do
           @handler.log(entry, level)
         end
+
       end
 
       @logger unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat
