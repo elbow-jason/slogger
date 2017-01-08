@@ -1,11 +1,12 @@
 defmodule MyUsableModule do
   defmacro __using__(_opts) do
     quote do
-      use Slogger
+      use Slogger, level: :info
 
       def run do
         #IO.inspect Code.ensure_loaded(Slogger)
-        Slogger.debug("this should work")
+        Slogger.warn("this should work")
+        Slogger.debug("failure if this shows up")
       end
     end
   end
@@ -28,6 +29,7 @@ defmodule SloggerUsableMacroTest do
     fun = fn -> MyInjectedModule.run end
     result =  capture_io(fun)
     assert result |> String.contains?("this should work")
+    refute result |> String.contains?("failure")
   end
 
 end

@@ -108,7 +108,7 @@ defmodule Slogger do
         unquote(__CALLER__.context_modules)
         |> List.first
       case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :debug)
+        ["Slogger", "Loggers" | _ ] -> first_module.debug(unquote(entry))
         _ ->
           raise "No Logger Found"
       end
@@ -122,7 +122,7 @@ defmodule Slogger do
         unquote(__CALLER__.context_modules)
         |> List.first
       case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :info)
+        ["Slogger", "Loggers" | _ ] -> first_module.info(unquote(entry))
         _ ->
           raise "No Logger Found"
       end
@@ -136,7 +136,7 @@ defmodule Slogger do
         unquote(__CALLER__.context_modules)
         |> List.first
       case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :warn)
+        ["Slogger", "Loggers" | _ ] -> first_module.warn(unquote(entry))
         _ ->
           raise "No Logger Found"
       end
@@ -150,7 +150,7 @@ defmodule Slogger do
         unquote(__CALLER__.context_modules)
         |> List.first
       case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :error)
+        ["Slogger", "Loggers" | _ ] -> first_module.error(unquote(entry))
         _ ->
           raise "No Logger Found"
       end
