@@ -10,7 +10,7 @@
 
 [![Build Status](https://travis-ci.org/elbow-jason/slogger.svg?branch=master)](https://travis-ci.org/elbow-jason/slogger)
 
-Slogger is a simple logger that allows module level control of logging, and easily customizable logging.
+Slogger is a simple logger that allows easily customizable, module-level control of logging.
 
 ## Usage
 
