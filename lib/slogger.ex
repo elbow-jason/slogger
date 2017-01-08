@@ -1,4 +1,10 @@
 defmodule Slogger do
+  @moduledoc """
+  The unquoted expression in the __using__/1 macro `unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat)`
+  puts the generated logging module in question into a namespace under `Slogger.Loggers`.
+  For example if `MyModule` has `use Slogger` then the module `Slogger.Loggers.MyModule` is
+  generated and is the module that has the `alias` of Slogger in the `MyModule` namespace.
+  """
   @levels [:debug, :info, :warn, :error]
 
   @level_ordinal [
