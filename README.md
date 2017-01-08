@@ -1,6 +1,6 @@
 
 <p align="center">
-    <img height="200" width="200" src="http://i.imgur.com/qybqMMx.png">
+    <img height="100" width="100" src="http://i.imgur.com/qybqMMx.png">
 </p>
 <p align="center">
   Simple Module-Level Logging
@@ -55,7 +55,7 @@ With a custom handler:
     @behaviour Slogger.LogHandler
 
     def log(entry, level) do
-      IO.puts "[#{level}] " <> "#{entry}"
+      IO.puts "Robot says, in [#{level}] voice, \"" <> "#{entry}" <> "\""
     end
 
     def debug(entry), do: log(entry, :debug)
@@ -66,7 +66,7 @@ With a custom handler:
 
 
   defmodule CustomHandlerSlogger do
-    use Slogger, handler: GenericHandler
+    use Slogger, handler: RobotHandler
 
     def beep do
       Slogger.warn("BEEP")
@@ -77,8 +77,8 @@ With a custom handler:
 
 Configure using the config.exs file:
 
-(in the app's `config.exs`)
 ```elixir
+  # in config.exs
   use Mix.Config
 
   config :slogger, MySloggingModule,
@@ -99,6 +99,7 @@ end
 
 ```
 
+NOTE: the `config` in a `config.exs` file will overwrite other configuration options. This allows for maximal flexibility in your applications.
 
 ## Installation
 
