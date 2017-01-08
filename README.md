@@ -1,3 +1,6 @@
+
+![](http://i.imgur.com/qybqMMx.png)
+
 # Slogger
 
 Slogger is a simple logger that allows module level control of logging, and easily customizable logging.
@@ -84,4 +87,10 @@ With a custom handler:
     end
 
   end
+```
+
+Configure using the config.exs file:
+
+```elixir
+
 ```
