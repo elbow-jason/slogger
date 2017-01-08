@@ -1,6 +1,6 @@
 # Slogger
 
-**TODO: Add description**
+Slogger is a simple logger that allows module level control of logging, and easily customizable logging.
 
 ## Installation
 
@@ -21,4 +21,3 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
       [applications: [:slogger]]
     end
     ```
-

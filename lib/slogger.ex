@@ -30,26 +30,45 @@ defmodule Slogger do
 
   defmacro __using__(opts) do
     quote do
-      @levels [:debug, :info, :warn, :error]
 
-      @level unquote(opts[:level]) || :debug
-      if not @level in @levels do
-        raise "Slogger requires a level of one of the following #{inspect @levels}"
+      defmodule unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat do
+        @levels [:debug, :info, :warn, :error]
+
+        @level unquote(opts[:level]) || :debug
+        if not @level in @levels do
+          raise "Slogger requires a level of one of the following #{inspect @levels}"
+        end
+
+        @handler unquote(opts[:handler]) || Slogger.DefaultHandler
+        if !@handler do
+          raise "Slogger requires a valid handler module"
+        end
+
+        def handler, do: @handler
+        def level,   do: @level
+
+        Slogger.define_log_func(@handler, :debug, @level)
+        Slogger.define_log_func(@handler, :info, @level)
+        Slogger.define_log_func(@handler, :warn, @level)
+        Slogger.define_log_func(@handler, :error, @level)
+
+        def log(entry, level) when level in @levels do
+          @handler.log(entry, level)
+        end
       end
 
-      @handler unquote(opts[:handler]) || Slogger.DefaultHandler
-      if !@handler do
-        raise "Slogger requires a valid handler module"
-      end
+      @logger unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat
 
-      def handler, do: @handler
-      def level,   do: @level
+      def logger, do: @logger
 
-      Slogger.define_log_func(handler, :debug, @level)
-      Slogger.define_log_func(handler, :info, @level)
-      Slogger.define_log_func(handler, :warn, @level)
-      Slogger.define_log_func(handler, :error, @level)
-
+      alias unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat
+      # For some reason logger_as is not being shadowed into scope in the alias unqoutes. -JLG
+      # logger_as = unquote(opts) |> Keyword.get(:as)
+      # if logger_as do
+      #   alias unquote Module.split(__CALLER__.module) |> Kernel.++([unquote(logger_as) |> Atom.to_string]) |> Module.concat
+      # else
+      #  alias unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat
+      # end
     end
   end
 end
