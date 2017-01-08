@@ -33,13 +33,14 @@ defmodule Slogger do
 
       defmodule unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat do
         @levels [:debug, :info, :warn, :error]
+        config = Application.get_env(:slogger, unquote(__CALLER__.module))
 
-        @level unquote(opts[:level]) || :debug
+        @level config[:level] || unquote(opts[:level])  || :debug
         if not @level in @levels do
           raise "Slogger requires a level of one of the following #{inspect @levels}"
         end
 
-        @handler unquote(opts[:handler]) || Slogger.DefaultHandler
+        @handler config[:handler] || unquote(opts[:handler]) || Slogger.DefaultHandler
         if !@handler do
           raise "Slogger requires a valid handler module"
         end
