@@ -10,7 +10,7 @@ defmodule Slogger.DefaultHandler do
     IO.puts(color(level) <> format_time(now) <> " [#{level}] " <> "#{entry}")
   end
 
-  def color(level) do
+  defp color(level) do
     case level do
       :debug -> IO.ANSI.cyan
       :info -> IO.ANSI.white
@@ -19,17 +19,20 @@ defmodule Slogger.DefaultHandler do
     end
   end
 
-  def now do
+  defp now do
     DateTime.utc_now
   end
 
-  def format_time(t) do
-    ms =
-      t.microsecond
-      |> elem(0)
-      |> Kernel./(1000)
-      |> round
-    "#{t.hour}:#{t.minute}:#{t.second}.#{ms}"
+  defp format_time(t) do
+    "#{t.hour |> pad(2)}:#{t.minute |> pad(2)}:#{t.second |> pad(2)}.#{t.microsecond |> elem(0) |> pad(3)}"
+  end
+
+  defp pad(num, padding) do
+    "#{num}"
+    |> String.reverse
+    |> Kernel.<>( String.duplicate("0", padding) )
+    |> binary_part(0, padding)
+    |> String.reverse
   end
 
 end
