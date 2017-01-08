@@ -18,6 +18,10 @@ defmodule Slogger do
     @level_ordinal[level_a] >= @level_ordinal[level_b]
   end
 
+  def is_module?(thing) do
+    Code.ensure_loaded?(thing)
+  end
+
   defmacro define_log_func(handler, level, config_level) do
     quote do
       if Slogger.is_gte?(unquote(level), unquote(config_level)) do
@@ -69,6 +73,8 @@ defmodule Slogger do
       end
 
       alias unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat), as: Slogger
+      require Elixir.Slogger
+
       # For some reason logger_as is not being shadowed into scope in the alias unqoutes. -JLG
       # logger_as = unquote(opts) |> Keyword.get(:as)
       # if logger_as do
@@ -78,4 +84,79 @@ defmodule Slogger do
       # end
     end
   end
+
+
+  defmacro log(entry, level) do
+    # this cannot be (?) macroed or it loses context
+    quote do
+      first_module =
+        unquote(__CALLER__.context_modules)
+        |> List.first
+      case first_module |> Module.split do
+        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), unquote(level))
+        _ ->
+          raise "No Logger Found"
+      end
+    end
+
+  end
+
+  defmacro debug(entry) do
+    # this cannot be (?) macroed or it loses context
+    quote do
+      first_module =
+        unquote(__CALLER__.context_modules)
+        |> List.first
+      case first_module |> Module.split do
+        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :debug)
+        _ ->
+          raise "No Logger Found"
+      end
+    end
+  end
+
+  defmacro info(entry) do
+    # this cannot be (?) macroed or it loses context
+    quote do
+      first_module =
+        unquote(__CALLER__.context_modules)
+        |> List.first
+      case first_module |> Module.split do
+        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :info)
+        _ ->
+          raise "No Logger Found"
+      end
+    end
+  end
+
+  defmacro warn(entry) do
+    # this cannot be (?) macroed or it loses context
+    quote do
+      first_module =
+        unquote(__CALLER__.context_modules)
+        |> List.first
+      case first_module |> Module.split do
+        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :warn)
+        _ ->
+          raise "No Logger Found"
+      end
+    end
+  end
+
+  defmacro error(entry) do
+    # this cannot be (?) macroed or it loses context
+    quote do
+      first_module =
+        unquote(__CALLER__.context_modules)
+        |> List.first
+      case first_module |> Module.split do
+        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), :error)
+        _ ->
+          raise "No Logger Found"
+      end
+    end
+  end
+
+
+
 end
