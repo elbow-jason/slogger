@@ -25,8 +25,9 @@ defmodule SloggerTest do
   test "logging works" do
     fun = fn -> SloggerExample.MyModule.add(1, 2) end
     result =  capture_io(fun)
-    assert String.contains? result, " [debug] adding a + b where a is 1 and b is 2\n"
-    assert String.contains? result, " [debug] equation: 1 + 2 = 3\n"
-    assert String.starts_with? result, "\e[36m"
+    assert String.contains? result, " [debug] adding a + b where a is 1 and b is 2"
+    assert String.contains? result, " [debug] equation: 1 + 2 = 3"
+    assert String.starts_with? result, "\e[36m" # cyan
+    assert String.ends_with? result, "\e[97m\n" # light_white and newline
   end
 end

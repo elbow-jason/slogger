@@ -1,21 +1,27 @@
 defmodule Slogger.DefaultHandler do
   @behaviour Slogger.LogHandler
 
+  @debug_color IO.ANSI.cyan
+  @info_color  IO.ANSI.white
+  @warn_color  IO.ANSI.yellow
+  @error_color IO.ANSI.red
+  @reset_color IO.ANSI.light_white
+
   def debug(entry), do: log(entry, :debug)
   def info(entry), do: log(entry, :info)
   def warn(entry), do: log(entry, :warn)
   def error(entry), do: log(entry, :error)
 
   def log(entry, level) do
-    IO.puts(color(level) <> format_time(now) <> " [#{level}] " <> "#{entry}")
+    IO.puts(color(level) <> format_time(now()) <> " [#{level}] " <> "#{entry}" <> @reset_color)
   end
 
   defp color(level) do
     case level do
-      :debug -> IO.ANSI.cyan
-      :info -> IO.ANSI.white
-      :warn -> IO.ANSI.yellow
-      :error -> IO.ANSI.red
+      :debug -> @debug_color
+      :info ->  @info_color
+      :warn ->  @warn_color
+      :error -> @error_color
     end
   end
 
