@@ -17,10 +17,12 @@ defmodule SloggerConfigTest do
   require SloggerConfigTestModule
   import ExUnit.CaptureIO
 
+
+
   test "log levels can be configured and overriden by a config.exs file" do
     # the module is configured directly, but overriden by the config
     fun = fn -> SloggerConfigTestModule.run end
-    result =  capture_io(fun)
+    result =  capture_io(:stderr, fun)
     assert result |> String.contains?("it worked")
     refute result |> String.contains?("it failed")
   end

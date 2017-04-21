@@ -12,8 +12,15 @@ defmodule Slogger.DefaultHandler do
   def warn(entry), do: log(entry, :warn)
   def error(entry), do: log(entry, :error)
 
+  def log(entry, :error = level) do
+    IO.puts(:stderr, message(entry, level))
+  end
   def log(entry, level) do
-    IO.puts(color(level) <> format_time(now()) <> " [#{level}] " <> "#{entry}" <> @reset_color)
+    IO.puts(message(entry, level))
+  end
+
+  defp message(entry, level) do
+    color(level) <> format_time(now()) <> " [#{level}] " <> "#{entry}" <> @reset_color
   end
 
   defp color(level) do
