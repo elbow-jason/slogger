@@ -19,6 +19,7 @@ Simple:
 ```elixir
 defmodule SimpleSlogger do
   use Slogger
+  # this module's Slogger is set to the default, :debug
 
   def add(a, b) when b |> is_number and a |> is_number do
     Slogger.debug("equation: #{a} + #{b} = x")
@@ -35,6 +36,9 @@ With a logging level:
 ```elixir
   defmodule LeveledSlogger do
     use Slogger, level: :info
+    # you can configure slogger log level directly in the module.
+    # or you can configure the log level in the
+    # config.exs files as in one of the examples below
 
     def is_one?(1) do
       # you will not see this debug log entry
@@ -87,10 +91,13 @@ Configure using the config.exs file:
     level: :error
 ```
 
+Setting the level in the config.exs overrides any log level set in
+the module:
+
 ```elixir
 
 defmodule MySloggingModule do
-  use Slogger
+  use Slogger, level: :debug # this is ignored because we set the level in the config.exs
 
   def do_it do
     Slogger.debug("this won't log")
@@ -105,23 +112,15 @@ NOTE: the `config` in a `config.exs` file will overwrite other configuration opt
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+[Slogger](https://hex.pm/packages/slogger) is available on hex.pm. To use Slogger, add `slogger` to your list of dependencies in `mix.exs`:
 
-  1. Add `slogger` to your list of dependencies in `mix.exs`:
+```elixir
 
-    ```elixir
-    def deps do
-      [{:slogger, "~> 0.1.0"}]
-    end
-    ```
+def deps do
+  [{:slogger, "~> 0.1.6"}]
+end
 
-  2. Ensure `slogger` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:slogger]]
-    end
-    ```
+```
 
 ## TODOS
 
