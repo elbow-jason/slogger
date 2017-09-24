@@ -108,7 +108,7 @@ end
 
 ```
 
-NOTE: the `config` in a `config.exs` file will overwrite other configuration options. This allows for maximal flexibility in your applications.
+NOTE: the `config` in a `config.exs` file will override other configuration options. This allows for maximal flexibility in your applications.
 
 ## Installation
 
