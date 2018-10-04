@@ -4,12 +4,13 @@ defmodule Slogger.Mixfile do
   def project do
     [
       app: :slogger,
-      version: "0.1.6",
+      version: "0.2.0",
       elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       deps: deps(),
       description: description(),
+      elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
     ]
   end
@@ -19,24 +20,15 @@ defmodule Slogger.Mixfile do
       :logger,
     ]
   end
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
+
+  defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
   def application do
     [
       applications: apps()
     ]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
     [
        {:ex_doc, ">= 0.0.0", only: :dev},

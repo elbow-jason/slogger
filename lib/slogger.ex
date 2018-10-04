@@ -5,158 +5,72 @@ defmodule Slogger do
   For example if `MyModule` has `use Slogger` then the module `Slogger.Loggers.MyModule` is
   generated and is the module that has the `alias` of Slogger in the `MyModule` namespace.
   """
+  alias Slogger.Table
+
   @levels [:debug, :info, :warn, :error]
+  @type log_level :: :debug | :info | :warn | :error
 
-  @level_ordinal [
-    debug: 0,
-    info:  1,
-    warn:  2,
-    error: 3,
-  ]
+  defguard is_level(item) when item in @levels
 
-  def is_gte?(level_a, level_b) when level_a in @levels and level_b in @levels do
-    @level_ordinal[level_a] >= @level_ordinal[level_b]
+  def levels() do
+    @levels
   end
 
-  def is_module?(thing) do
-    Code.ensure_loaded?(thing)
+  @spec default_level() :: log_level()
+  def default_level() do
+    Application.get_env(:slogger, :default_level) || :info
   end
 
-  defmacro define_log_func(handler, level, config_level) do
-    quote do
-      if Slogger.is_gte?(unquote(level), unquote(config_level)) do
-        def unquote(level)(entry) do
-          apply(unquote(handler), unquote(level), [entry])
-        end
-      else
-        def unquote(level)(_) do
-          :ok
-        end
-      end
-
-    end
+  @spec should_log?(module(), log_level()) :: boolean()
+  def should_log?(module, level) do
+    ordinal(module.get_level()) <= ordinal(level)
   end
 
+  @spec ordinal(:debug | :error | :info | :warn) :: 0 | 1 | 2 | 3
+  defp ordinal(:debug), do: 0
+  defp ordinal(:info), do: 1
+  defp ordinal(:warn), do: 2
+  defp ordinal(:error), do: 3
+
+  def set_level(module, level) when is_level(level) do
+    Table.start()
+    Table.set_level(module, level)
+  end
+
+  def get_level(module) do
+    module.get_level()
+  end
 
   defmacro __using__(opts) do
     quote do
-      defmodule unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat) do
-        caller_module = unquote(__CALLER__.module)
-        @levels [:debug, :info, :warn, :error]
-        config = Application.get_env(:slogger, caller_module)
+      @log_level Keyword.get(unquote(opts), :level, Slogger.default_level())
+      if @log_level not in Slogger.levels() do
+        raise CompileError, message: "Slogger :lavel can only be one of #{inspect(Slogger.levels)}. Got #{inspect(@log_level)}"
+      end
 
-        @level config[:level] || unquote(opts[:level])  || :debug
-        if not @level in @levels do
-          raise "Slogger requires a level of one of the following #{inspect @levels}"
+      def set_level(level) do
+        Slogger.set_level(__MODULE__, level)
+      end
+
+      def get_level() do
+        Table.get_level(__MODULE__) || @log_level
+      end
+
+      def log(level, entry, opts \\ []) do
+        if Slogger.should_log?(__MODULE__, level) do
+          bare_log(level, entry, opts)
         end
-
-        @handler config[:handler] || unquote(opts[:handler]) || Slogger.DefaultHandler
-        if !@handler do
-          raise "Slogger requires a valid handler module"
-        end
-
-        def handler, do: @handler
-        def level,   do: @level
-
-        Slogger.define_log_func(@handler, :debug, @level)
-        Slogger.define_log_func(@handler, :info, @level)
-        Slogger.define_log_func(@handler, :warn, @level)
-        Slogger.define_log_func(@handler, :error, @level)
-
-        def log(entry, level) when level in @levels do
-          @handler.log(entry, level)
-        end
-
-        @logger unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat)
-        def logger, do: @logger
-
+        :ok
       end
 
-      alias unquote((["Slogger", "Loggers"] ++ Module.split(__CALLER__.module)) |> Module.concat), as: Slogger
-      require Elixir.Slogger
-
-      # For some reason logger_as is not being shadowed into scope in the alias unqoutes. -JLG
-      # logger_as = unquote(opts) |> Keyword.get(:as)
-      # if logger_as do
-      #   alias unquote Module.split(__CALLER__.module) |> Kernel.++([unquote(logger_as) |> Atom.to_string]) |> Module.concat
-      # else
-      #  alias unquote Module.split(__CALLER__.module) |> Kernel.++(["Slogger"]) |> Module.concat
-      # end
-    end
-  end
-
-
-  defmacro log(entry, level) do
-    # this cannot be (?) macroed or it loses context
-    quote do
-      first_module =
-        unquote(__CALLER__.context_modules)
-        |> List.first
-      case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.log(unquote(entry), unquote(level))
-        _ ->
-          raise "No Logger Found"
+      def bare_log(level, entry, opts \\ []) do
+        Logger.bare_log(level, entry, opts)
       end
-    end
 
-  end
-
-  defmacro debug(entry) do
-    # this cannot be (?) macroed or it loses context
-    quote do
-      first_module =
-        unquote(__CALLER__.context_modules)
-        |> List.first
-      case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.debug(unquote(entry))
-        _ ->
-          raise "No Logger Found"
-      end
+      def debug(entry, opts \\ []), do: log(:debug, entry, opts)
+      def info(entry, opts \\ []), do: log(:info, entry, opts)
+      def warn(entry, opts \\ []), do: log(:warn, entry, opts)
+      def error(entry, opts \\ []), do: log(:error, entry, opts)
     end
   end
-
-  defmacro info(entry) do
-    # this cannot be (?) macroed or it loses context
-    quote do
-      first_module =
-        unquote(__CALLER__.context_modules)
-        |> List.first
-      case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.info(unquote(entry))
-        _ ->
-          raise "No Logger Found"
-      end
-    end
-  end
-
-  defmacro warn(entry) do
-    # this cannot be (?) macroed or it loses context
-    quote do
-      first_module =
-        unquote(__CALLER__.context_modules)
-        |> List.first
-      case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.warn(unquote(entry))
-        _ ->
-          raise "No Logger Found"
-      end
-    end
-  end
-
-  defmacro error(entry) do
-    # this cannot be (?) macroed or it loses context
-    quote do
-      first_module =
-        unquote(__CALLER__.context_modules)
-        |> List.first
-      case first_module |> Module.split do
-        ["Slogger", "Loggers" | _ ] -> first_module.error(unquote(entry))
-        _ ->
-          raise "No Logger Found"
-      end
-    end
-  end
-
-
-
 end

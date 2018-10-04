@@ -1,5 +1,6 @@
 use Mix.Config
 
-# this is here to test the config file overrides all other configurations
-config :slogger, SloggerConfigTestModule,
-  level: :error
+config :slogger,
+  default_level: :info,
+  levels_table_name: :slogger_levels
+

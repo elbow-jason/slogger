@@ -18,3 +18,5 @@ erl_crash.dump
 
 # dont want those pesky beam files
 *.beam
+
+.elixir_ls/
