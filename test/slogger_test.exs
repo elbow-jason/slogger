@@ -14,7 +14,7 @@ defmodule SloggerTest do
   import Slogger.CaptureLog
 
   test "a module without a level defaults to default config" do
-    level = Application.get_env(:slogger, :default_level)
+    level = Application.get_env(:slogger, :level)
     assert level in Slogger.levels()
     assert NoLevelLogger.get_level() == level
   end
@@ -24,15 +24,15 @@ defmodule SloggerTest do
   end
 
   test "default log level is configurable" do
-    assert ConfigurableLogger.get_level() in Slogger.levels()
-    assert :ok = ConfigurableLogger.set_level(:debug)
-    assert ConfigurableLogger.get_level() == :debug
-    assert :ok = ConfigurableLogger.set_level(:info)
-    assert ConfigurableLogger.get_level() == :info
-    assert :ok = ConfigurableLogger.set_level(:warn)
-    assert ConfigurableLogger.get_level() == :warn
-    assert :ok = ConfigurableLogger.set_level(:error)
-    assert ConfigurableLogger.get_level() == :error
+    assert ConfigurableLogger.level() in Slogger.levels()
+    assert :ok = ConfigurableLogger.level(:debug)
+    assert ConfigurableLogger.level() == :debug
+    assert :ok = ConfigurableLogger.level(:info)
+    assert ConfigurableLogger.level() == :info
+    assert :ok = ConfigurableLogger.level(:warn)
+    assert ConfigurableLogger.level() == :warn
+    assert :ok = ConfigurableLogger.level(:error)
+    assert ConfigurableLogger.level() == :error
   end
 
   @letters ?a..?z |> Enum.into([]) |> MapSet.new()
@@ -54,7 +54,7 @@ defmodule SloggerTest do
 
   describe "debug level setting" do
     test "logs all other levels" do
-      assert DebugLogger.get_level() == :debug
+      assert DebugLogger.level() == :debug
       assert_logs(&DebugLogger.error/1)
       assert_logs(&DebugLogger.warn/1)
       assert_logs(&DebugLogger.info/1)
@@ -64,12 +64,12 @@ defmodule SloggerTest do
 
   describe "info level setting" do
     test "does not log debug" do
-      assert InfoLogger.get_level() == :info
+      assert InfoLogger.level() == :info
       assert_does_not_log(&InfoLogger.debug/1)
     end
 
     test "logs levels info and above" do
-      assert InfoLogger.get_level() == :info
+      assert InfoLogger.level() == :info
       assert_logs(&InfoLogger.error/1)
       assert_logs(&InfoLogger.warn/1)
       assert_logs(&InfoLogger.info/1)
@@ -78,13 +78,13 @@ defmodule SloggerTest do
 
   describe "warn level setting" do
     test "does not log debug or info" do
-      assert WarnLogger.get_level() == :warn
+      assert WarnLogger.level() == :warn
       assert_does_not_log(&WarnLogger.debug/1)
       assert_does_not_log(&WarnLogger.info/1)
     end
 
     test "logs levels warn and error" do
-      assert WarnLogger.get_level() == :warn
+      assert WarnLogger.level() == :warn
       assert_logs(&WarnLogger.error/1)
       assert_logs(&WarnLogger.warn/1)
     end
@@ -92,14 +92,14 @@ defmodule SloggerTest do
 
   describe "error level setting" do
     test "does not log debug, info, or warn" do
-      assert ErrorLogger.get_level() == :error
+      assert ErrorLogger.level() == :error
       assert_does_not_log(&ErrorLogger.debug/1)
       assert_does_not_log(&ErrorLogger.info/1)
       assert_does_not_log(&ErrorLogger.warn/1)
     end
 
     test "logs levels warn and error" do
-      assert ErrorLogger.get_level() == :error
+      assert ErrorLogger.level() == :error
       assert_logs(&ErrorLogger.error/1)
     end
   end

@@ -1,5 +1,6 @@
 defmodule Slogger.Table do
   require Slogger
+  alias Slogger.State
 
   @spec name() ::atom()
   def name() do
@@ -9,40 +10,52 @@ defmodule Slogger.Table do
   @spec start() :: atom()
   def start() do
     try do
-      :ets.new(name(), [:named_table, :public, read_concurrency: true])
+      :ets.new(name(), [:set, :named_table, :public, read_concurrency: true])
       :ok
     rescue ArgumentError ->
       {:error, :already_started}
     end
   end
 
-  @spec exists?() :: boolean()
-  def exists?() do
+  def upsert(%State{} = state) do
+    state
+    |> Map.from_struct()
+    |> Enum.into([])
+    |> upsert
+  end
+
+  def upsert(kwargs) when is_list(kwargs) do
+    ets_row = State.to_ets_tuple(kwargs)
+    if :ets.insert_new(name(), ets_row) do
+      :ok
+    else
+      {module, updates} = Keyword.pop_lazy(kwargs, :module, &raise_module_required/0)
+      element_spec = State.to_element_spec(updates)
+      :ets.update_element(name(), module, element_spec)
+      :ok
+    end
+  end
+
+  defp raise_module_required() do
+    raise ArgumentError, message: ":module is required to upsert new :ets row"
+  end
+
+  def fetch(module) do
     name()
-    |> :ets.info(:id)
-    |> is_reference()
+    |> :ets.lookup(module)
+    |> case do
+      [item] when is_tuple(item) ->
+        {:ok, State.from_ets_tuple(item)}
+      _ ->
+        :error
+    end
   end
 
-  @spec set_level(any(), :debug | :error | :info | :warn) :: :ok
-  def set_level(key, value) when Slogger.is_level(value) do
-    if not exists?() do
-      start()
-    end
-    :ets.insert(name(), {key, value})
-    :ok
+  def get_by(kwargs) do
+    :ets.match_object(name(), State.to_match_spec(kwargs))
   end
 
-  @spec get_level(any()) :: atom()
-  def get_level(key) do
-    if exists?() do
-      name()
-      |> :ets.lookup(key)
-      |> case do
-        [{^key, level}] ->
-          level
-        _ ->
-          nil
-      end
-    end
+  def info() do
+    :ets.info(name())
   end
 end

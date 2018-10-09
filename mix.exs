@@ -26,7 +26,8 @@ defmodule Slogger.Mixfile do
 
   def application do
     [
-      applications: apps()
+      applications: apps(),
+      mod: {Slogger.Application, []}
     ]
   end
 

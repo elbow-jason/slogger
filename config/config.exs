@@ -1,6 +1,8 @@
 use Mix.Config
 
 config :slogger,
-  default_level: :info,
-  levels_table_name: :slogger_levels
+  level: :info,
+  format: "$date $time [$level] $metadata $message\n",
+  table: :slogger_levels
+
 
